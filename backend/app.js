@@ -9,6 +9,7 @@ const path = require('path');
 
 //route imports
 const userRoutes = require('./routes/user');
+const sauceRoutes = require('./routes/sauce');
 
 //running express function to create an express app
 const app = express();
@@ -33,5 +34,6 @@ app.use(bodyParser.json());
 app.use('/images', express.static(path.join(__dirname, 'images')));
 // app.use('/api/stuff', stuffRoutes);
 app.use('/api/auth', userRoutes);
+app.use('/api/sauces', sauceRoutes);
 
 module.exports = app;
