@@ -16,7 +16,7 @@ exports.getAllProducts = ((req, res, next) => {
 
 exports.getOneProduct = ((req, res, next) => {
   const productId = req.params.id;
-  Sauce.findById(productId)
+  Sauce.findById({ _id: productId})
     .then((sauce) => {
       res.status(200).json(sauce)
     })
@@ -144,14 +144,27 @@ exports.deleteProduct = ((req, res, next) => {
 
 exports.likeProduct = ((req, res, next) => {
   const userId = req.body.userId;
+  const likeValue = req.body.like;
+
   Sauce.findById(req.params.id)
     .then((sauce) => {
-      const alreadyLiked = sauce.userLiked.indexOf(userId);
-      const alreadyDisliked = sauce.userDisliked.indexOf(userId);
-      console.log(alreadyLiked, alreadyDisliked, res.body.like);
+      const alreadyLiked = sauce.usersLiked.indexOf(userId);
+      const alreadyDisliked = sauce.usersDisliked.indexOf(userId);
 
-      sauce.likes = sauce.userLiked.length;
-      sauce.dislikes = sauce.userDisliked.length;
+      if (likeValue === 0) {
+        if (alreadyDisliked > -1) {
+          sauce.usersDisliked.splice(alreadyDisliked, 1);
+        } else {
+          sauce.usersLiked.splice(alreadyLiked, 1);
+        }
+      } else if (likeValue === 1) {
+        sauce.usersLiked.push(userId);
+      } else {
+        sauce.usersDisliked.push(userId);
+      }
+
+      sauce.likes = sauce.usersLiked.length;
+      sauce.dislikes = sauce.usersDisliked.length;
       sauce.save()
         .then(() => {
           res.status(201).json({
@@ -159,12 +172,15 @@ exports.likeProduct = ((req, res, next) => {
           });
         })
         .catch((error) => {
-          console.log(error);
+          res.status(400).json({
+            message: 'Something went wrong'
+          });
         })
     })
     .catch((error) => {
+      console.log(error)
       res.status(400).json({
-        message: 'Something went wrong'
+        error
       });
     });
 })
